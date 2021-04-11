@@ -113,6 +113,13 @@ class Application(Frame):
             print('pilihan semua')
     def proses(self):
         print('ini dari proses')
+        # jika hanya 'Dari' maka proses bulan tersebut
+        if(self.is_all_data.get()==1):
+            print('all data')
+        else:
+            print('filter')
+            if('Pilih' in self.selected_month_2.get() or 'Pilih' in self.selected_year_2.get()):
+                print('proses satu bulan')
 
 
 
