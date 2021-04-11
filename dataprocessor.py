@@ -33,7 +33,7 @@ class DataProcessor():
     def getKodeSaham(self):
         # iterate over range
         lstKode = set()
-        texts = ','.join([i.lower() for i in self.dffilter['text'] if isinstance(i,str)])
+        texts = ','.join([i.lower() for i in self.dffilter['text'] if  isinstance(i,str)])
         for i in self.__listKodeSaham:
             if i.lower() in texts:
                 lstKode.add(i)
