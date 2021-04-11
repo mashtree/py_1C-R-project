@@ -1,4 +1,5 @@
 import pandas as pd
+import calendar as cal
 import os
 
 class DataProcessor():
@@ -35,13 +36,23 @@ class DataProcessor():
     method utk memfilter data berdasarkan range yg dipilih, disimpan dalam df baru
     '''
     def filter(self, awal = '0000', akhir='0000'):
+        is_all = False
         if('0000' in awal and '0000' in akhir):
             pass
         elif('0000' not in awal and '0000' in akhir):
+            is_all = True
             self.awal = awal
-            # filter berdasarkan bulan
+            d = datetime.datetime.strptime(self.awal, '%Y-%m')
+            self.awal = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
+            self.akhir = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(calendar.monthrange(d.year, d.month)[1])
         else:
-            self.awal = awal
-            self.akhir = akhir
-            # filter berdasarkan range bulan
+            is_all = True
+            da = datetime.datetime.strptime(awal, '%Y-%m')
+            self.awal = da.year+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
+            dk = datetime.datetime.strptime(akhir, '%Y-%m')
+            self.akhir = dk.year+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
+        if is_all:
+            self.dffilter = pd.DataFrame([x for x in df['messages']] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
+        else:
+            self.dffilter = pd.DataFrame([x for x in df['messages']])[['date','text']]
         return
