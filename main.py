@@ -2,6 +2,7 @@ from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator
 from tkinter import filedialog as fd
 import pandas as pd
+import csv
 from dataprocessor import DataProcessor
 
 
@@ -49,8 +50,16 @@ class Application(Frame):
         btnFilter = Button(self.left_frame, text="Filter", command=self.filter)
         btnFilter.grid(row=4, column=0, sticky=W, padx=5)
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=5, columnspan=1, ipadx=75, padx=5, sticky=W)
+
+        kodeSaham = []
+        with open('StockList.csv') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                kodeSaham.append(row['Kode'])
+        kodeSaham.sort()
+        
         cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
-        cbSaham['values'] = []
+        cbSaham['values'] = kodeSaham
         cbSaham['state'] = 'readonly'  # normal
         cbSaham.set('-- Pilih Saham --')
         cbSaham.grid(row=6, column=0,padx=5, pady=5)
