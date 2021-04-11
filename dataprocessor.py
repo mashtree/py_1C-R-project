@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-class DataProcessing():
+class DataProcessor():
 
     def __init__(self, filepath=None):
         self.__filepath = filepath
@@ -45,5 +45,3 @@ class DataProcessing():
             self.akhir = akhir
             # filter berdasarkan range bulan
         return
-
-    def

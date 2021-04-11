@@ -2,7 +2,7 @@ from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator
 from tkinter import filedialog as fd
 import pandas as pd
-from dataprocessor import DataProcessing
+from dataprocessor import DataProcessor
 
 
 class Application(Frame):
@@ -15,7 +15,7 @@ class Application(Frame):
         self.selected_month_2 = StringVar()
         self.selected_year_2 = StringVar()
         self.selected_saham = StringVar()
-        self.dp = DataProcessing()
+        self.dp = DataProcessor()
         self.initUI()
 
     def initUI(self):
@@ -114,7 +114,7 @@ class Application(Frame):
     def filter(self):
         if(self.is_all_data.get()==1):
             print('pilihan semua')
-            
+
     def proses(self):
         print('ini dari proses')
         # jika hanya 'Dari' maka proses bulan tersebut
