@@ -1,6 +1,8 @@
 import pandas as pd
 import calendar as cal
 import os
+from typing import DefaultDict
+import copy
 
 class DataProcessor():
 
@@ -30,7 +32,12 @@ class DataProcessor():
     '''
     def getKodeSaham(self):
         # iterate over range
-        pass
+        lstKode = set()
+        texts = ','.join([i.lower() for i in self.dffilter['text'] if isinstance(i,str)])
+        for i in self.__listKodeSaham:
+            if i.lower() in texts:
+                lstKode.add(i)
+        return list(lstKode)
 
     '''
     method utk memfilter data berdasarkan range yg dipilih, disimpan dalam df baru
@@ -55,4 +62,51 @@ class DataProcessor():
             self.dffilter = pd.DataFrame([x for x in df['messages']] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
         else:
             self.dffilter = pd.DataFrame([x for x in df['messages']])[['date','text']]
-        return
+        return self
+
+    def getCount(self, stockcode):
+        stock_table = pd.read_excel(r'files\StockList.xlsx')
+        excluded_word = pd.read_excel(r'files\excluded_word.xlsx')
+        counter = DefaultDict(int)
+        bydate = DefaultDict(str)
+        buffer_date = ''
+
+        for chats in self.dffilter['messages'] :
+            try :
+                if chats['text'] != '':
+                    tanggal = chats["date"].split("T")[0]
+                    pengirim = chats["from"]
+                    teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+                    teks_perkata = teks.split(" ")
+                    kode_saham = []
+                    if tanggal != buffer_date :
+                        counter = DefaultDict(int)
+                    else :
+                        pass
+                    cek_double = []
+                    for x in teks_perkata :
+                        if x not in cek_double :
+                            if x in stock_table.Kode.values :
+                                if x not in excluded_word.values :
+                                    kode_saham.append(x)
+                                    cek_double.append(x)
+                                    counter[x]+=1
+                                    bydate[tanggal]=copy.copy(counter)
+                                else :
+                                    continue
+                            else :
+                                continue
+                        else :
+                            continue
+                    buffer_date = tanggal
+                else :
+                    continue
+            except :
+                continue
+
+        mention_counter = [bydate[x][stockcode] for x in bydate]
+        mention_date = [x for x in bydate]
+
+        df = pd.DataFrame([mention_date,mention_counter]).transpose()
+        df.columns = ('date','mentions')
+        return df
