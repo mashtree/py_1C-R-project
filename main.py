@@ -2,6 +2,7 @@ from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator
 from tkinter import filedialog as fd
 import pandas as pd
+from dataprocessor import DataProcessing
 
 
 class Application(Frame):
@@ -14,6 +15,7 @@ class Application(Frame):
         self.selected_month_2 = StringVar()
         self.selected_year_2 = StringVar()
         self.selected_saham = StringVar()
+        self.dp = DataProcessing()
         self.initUI()
 
     def initUI(self):
@@ -101,16 +103,18 @@ class Application(Frame):
     def openFile(self):
         name = fd.askopenfilename()
         self.lbl['text'] = self.lbl['text']+' '+name
-        print(self.is_all_data.get())
+        self.dp.load(name)
 
     def cbCallback(self):
         if(self.is_all_data.get() == 1):
             self.rangeFrame.grid_forget()
         else:
             self.rangeFrame.grid()
+
     def filter(self):
         if(self.is_all_data.get()==1):
             print('pilihan semua')
+            
     def proses(self):
         print('ini dari proses')
         # jika hanya 'Dari' maka proses bulan tersebut
