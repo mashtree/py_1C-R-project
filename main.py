@@ -47,23 +47,28 @@ class Application(Frame):
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=2, columnspan=1, ipadx=75, padx=5, sticky=W)
         self.rangeFrame = self.rangeFrame() #Frame(self.left_frame, borderwidth = 1)
         self.rangeFrame.grid(row=3, column=0, columnspan=2)
+
+        # Button Filter
         btnFilter = Button(self.left_frame, text="Filter", command=self.filter)
         btnFilter.grid(row=4, column=0, sticky=W, padx=5)
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=5, columnspan=1, ipadx=75, padx=5, sticky=W)
 
-        kodeSaham = []
-        with open('StockList.csv') as csv_file:
+        # Combobox Pilih Saham
+        self.kodeSaham = []
+        with open('StockList.csv') as csv_file: 
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                kodeSaham.append(row['Kode'])
+                self.kodeSaham.append(row['Kode'].upper()) # Kode untuk mengambil data dari stocklist kolom kode
         self.kodeSaham.sort()
         self.txSaham = Text(self.left_frame)
-        self.cbSaham.grid(row=6, column=0,padx=5, pady=5)
+        
         self.cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
-        self.cbSaham['values'] = kodeSaham
+        self.cbSaham['values'] = self.kodeSaham
         self.cbSaham['state'] = 'readonly'  # normal
         self.cbSaham.set('-- Pilih Saham --')
         self.cbSaham.grid(row=7, column=0,padx=5, pady=5)
+
+        # Buton Proses
         btnProses = Button(self.left_frame, text="proses", command=self.proses)
         btnProses.grid(row=8, column=0, sticky=W, padx=5)
 
@@ -125,19 +130,20 @@ class Application(Frame):
         if(self.is_all_data.get()==1):
             self.dp.filter(awal = '0000', akhir='0000')
         else:
-            if('Pilih' not in ''.join([this.selected_year_1.get(),this.selected_month_1.get() and 'Pilih' in ''.join([this.selected_year_2.get(),this.selected_month_2.get()):
-                self.dp.filter(awal = str(this.selected_year_1.get())+'-'+this.selected_month_1.get()[:2], akhir = '0000')
+            if('Pilih' not in ''.join([self.selected_year_1.get(),self.selected_month_1.get()]) and 'Pilih' in ''.join([self.selected_year_2.get(),self.selected_month_2.get()])):
+                self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = '0000')
             else:
-                self.dp.filter(awal = str(this.selected_year_1.get())+'-'+this.selected_month_1.get()[:2], akhir = str(this.selected_year_2.get())+'-'+this.selected_month_2.get()[:2])
+                self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = str(self.selected_year_2.get())+'-'+self.selected_month_2.get()[:2])
+        print(self.dp.dffilter)
         lst = self.dp.getKodeSaham()
-        cbSaham['values'] = lst
+        self.cbSaham['values'] = lst
 
     def proses(self):
         print('ini dari proses')
         stockcode = self.cbSaham.get()
-        if(len(self.txSaham.get())>0):
-            stockcode = self.txSaham.get()
-        df = self.getCount(stockcode)
+        '''if(len(self.txSaham.get())>0):
+            stockcode = self.txSaham.get()'''
+        df = self.dp.getCount(stockcode)
         # TODO
         # mendapatkan data yfinance dan menyandingkan dengan data stock dalam satu tabel
         # ---------------------------------------

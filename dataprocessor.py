@@ -3,6 +3,7 @@ import calendar as cal
 import os
 from typing import DefaultDict
 import copy
+import datetime
 
 class DataProcessor():
 
@@ -54,63 +55,64 @@ class DataProcessor():
             is_all = True
             self.awal = awal
             d = datetime.datetime.strptime(self.awal, '%Y-%m')
-            self.awal = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
-            self.akhir = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(calendar.monthrange(d.year, d.month)[1])
+            self.awal = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
+            self.akhir = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(calendar.monthrange(d.year, d.month)[1])
         else:
             is_all = True
             da = datetime.datetime.strptime(awal, '%Y-%m')
-            self.awal = da.year+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
+            self.awal = datetime.datetime.strptime(awal, '%Y-%m')
+            #str(da.year)+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
             dk = datetime.datetime.strptime(akhir, '%Y-%m')
-            self.akhir = dk.year+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
+            self.akhir = datetime.datetime.strptime(akhir, '%Y-%m')
+            #str(dk.year)+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
         if is_all:
-            self.dffilter = pd.DataFrame([x for x in df['messages']] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
+            self.dffilter = pd.DataFrame([x for x in self.df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
         else:
-            self.dffilter = pd.DataFrame([x for x in df['messages']])[['date','text']]
+            self.dffilter = pd.DataFrame([x for x in self.df['messages']])[['date','text']]
         return self
 
     def getCount(self, stockcode):
+        print(stockcode)
         counter = DefaultDict(int)
         bydate = DefaultDict(str)
         buffer_date = ''
 
-        for chats in self.dffilter['messages'] :
-            try :
-                if chats['text'] != '':
-                    tanggal = chats["date"].split("T")[0]
-                    pengirim = chats["from"]
-                    teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
-                    teks_perkata = teks.split(" ")
-                    kode_saham = []
-                    if tanggal != buffer_date :
-                        counter = DefaultDict(int)
-                    else :
-                        pass
-                    cek_double = []
-                    for x in teks_perkata :
-                        if x not in cek_double :
-                            if x in self.stock_table.Kode.values :
-                                if x not in self.excluded_word.values :
-                                    kode_saham.append(x)
-                                    cek_double.append(x)
-                                    counter[x]+=1
-                                    bydate[tanggal]=copy.copy(counter)
-                                else :
-                                    continue
-                            else :
-                                continue
-                        else :
-                            continue
-                    buffer_date = tanggal
-                else :
-                    continue
-            except :
+        for chats in self.dffilter['message'] :
+            if chats != '':
+                tanggal = chats["date"].split("T")[0]
+		teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+		teks_perkata = teks.split(" ")
+		kode_saham = []
+		if tanggal != buffer_date :
+		    counter = DefaultDict(int)
+		else :
+		    pass
+		cek_double = []
+		for x in teks_perkata :
+		    if x not in cek_double :
+			if x in self.stock_table.Kode.values :
+			    if x not in self.excluded_word.values :
+				kode_saham.append(x)
+				cek_double.append(x)
+				counter[x]+=1
+				bydate[tanggal]=copy.copy(counter)
+			    else :
+				continue
+			else :
+			    continue
+		    else :
+			continue
+		buffer_date = tanggal
+            else :
                 continue
+                
 
         mention_counter = [bydate[x][stockcode] for x in bydate]
         mention_date = [x for x in bydate]
 
         df = pd.DataFrame([mention_date,mention_counter]).transpose()
         df.columns = ('date','mentions')
+        print(df)
         return df
 
     def getPergerakanHargaSaham(self, stockcode):
