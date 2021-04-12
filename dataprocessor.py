@@ -52,7 +52,7 @@ class DataProcessor():
             dk = datetime.datetime.strptime(akhir, '%Y-%m')
             self.akhir = dk.year+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
         if is_all:
-            self.dffilter = pd.DataFrame([x for x in df['messages']] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
+            self.dffilter = pd.DataFrame([x for x in df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
         else:
             self.dffilter = pd.DataFrame([x for x in df['messages']])[['date','text']]
         return
