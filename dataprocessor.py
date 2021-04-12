@@ -81,31 +81,31 @@ class DataProcessor():
             try:
                 if chats != '':
                     tanggal = chats["date"].split("T")[0]
-            		teks = self.dffilter["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
-            		teks_perkata = teks.split(" ")
-            		kode_saham = []
-            		if tanggal != buffer_date :
-            		    counter = DefaultDict(int)
-            		else :
-            		    pass
-            		cek_double = []
-            		for x in teks_perkata :
-            		    if x not in cek_double :
-            			if x in self.stock_table.Kode.values :
-            			    if x not in self.excluded_word.values :
-            				kode_saham.append(x)
-            				cek_double.append(x)
-            				counter[x]+=1
-            				bydate[tanggal]=copy.copy(counter)
-            			    else :
-            				continue
-            			else :
-            			    continue
-            		    else :
-            			continue
-            		buffer_date = tanggal
+                    teks = self.dffilter["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+                    teks_perkata = teks.split(" ")
+                    kode_saham = []
+                    if tanggal != buffer_date :
+                        counter = DefaultDict(int)
+                    else :
+                        pass
+                    cek_double = []
+                    for x in teks_perkata :
+                        if x not in cek_double :
+                            if x in self.stock_table.Kode.values :
+                                if x not in self.excluded_word.values :
+                                    kode_saham.append(x)
+                                    cek_double.append(x)
+                                    counter[x]+=1
+                                    bydate[tanggal]=copy.copy(counter)
+                                else :
+                                    continue
+                            else :
+                                continue
                         else :
                             continue
+                    buffer_date = tanggal
+                else :
+                    continue
             except:
                 continue
 

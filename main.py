@@ -54,16 +54,16 @@ class Application(Frame):
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=5, columnspan=1, ipadx=75, padx=5, sticky=W)
 
         # Combobox Pilih Saham
-        self.kodeSaham = []
-        with open('StockList.csv') as csv_file: 
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                self.kodeSaham.append(row['Kode'].upper()) # Kode untuk mengambil data dari stocklist kolom kode
-        self.kodeSaham.sort()
+        # self.kodeSaham = []
+        # with open('StockList.csv') as csv_file:
+        #     csv_reader = csv.DictReader(csv_file)
+        #     for row in csv_reader:
+        #         self.kodeSaham.append(row['Kode'].upper()) # Kode untuk mengambil data dari stocklist kolom kode
+        # self.kodeSaham.sort()
         self.txSaham = Text(self.left_frame)
-        
+
         self.cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
-        self.cbSaham['values'] = self.kodeSaham
+        self.cbSaham['values'] = [] #self.kodeSaham
         self.cbSaham['state'] = 'readonly'  # normal
         self.cbSaham.set('-- Pilih Saham --')
         self.cbSaham.grid(row=7, column=0,padx=5, pady=5)
@@ -72,16 +72,6 @@ class Application(Frame):
         btnProses = Button(self.left_frame, text="proses", command=self.proses)
         btnProses.grid(row=8, column=0, sticky=W, padx=5)
 
-        # month_cb.bind('<<ComboboxSelected>>', month_changed)
-
-        # cbtn = Button(self.left_frame, text="Close")
-        # cbtn.grid(row=2, column=0, pady=4)
-
-        hbtn = Button(self, text="Help")
-        hbtn.grid(row=5, column=0, padx=5)
-
-        obtn = Button(self, text="OK")
-        obtn.grid(row=5, column=3)
 
     def rangeFrame(self):
         frame = Frame(self.left_frame, borderwidth = 1)
@@ -143,19 +133,10 @@ class Application(Frame):
         stockcode = self.cbSaham.get()
         '''if(len(self.txSaham.get())>0):
             stockcode = self.txSaham.get()'''
-        df = self.dp.getCount(stockcode)
-        # TODO
-        # mendapatkan data yfinance dan menyandingkan dengan data stock dalam satu tabel
-        # ---------------------------------------
-        # jika hanya 'Dari' maka proses bulan tersebut
-        # if(self.is_all_data.get()==1):
-        #     print('all data')
-        # else:
-        #     print('filter')
-        #     if('Pilih' in self.selected_month_2.get() or 'Pilih' in self.selected_year_2.get()):
-        #         print('proses satu bulan')
-
-
+        dfa = self.dp.getCount(stockcode)
+        __, stockprice, __ = self.db.getPergerakanHargaSaham(stockcode)
+        df = self.dp.sandingData(dfa, stockprice)
+        self.dp.plot(df)
 
 def main():
 
