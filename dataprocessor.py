@@ -112,3 +112,20 @@ class DataProcessor():
         df = pd.DataFrame([mention_date,mention_counter]).transpose()
         df.columns = ('date','mentions')
         return df
+
+    def getPergerakanHargaSaham(self, stockcode):
+        check_stockcode = stockcode.find(".JK")
+
+        if check_stockcode == -1:
+            stockcode = (stockcode+".JK")
+        else:
+            stockcode
+
+        #Input stockcode ke Yahoo Finance
+        stockinfo = yf.download(stockcode, start="{}".format(self.awal), end="{}".format(self.akhir))
+        stock_price = stockinfo['Adj Close']
+
+        #Mengambil Nama Perusahaan
+        company_info = yf.Ticker("{}".format(stockcode))
+        company_name = company_info.info["longName"]
+        return company_name, stock_price, Dataframe(stock_price)
