@@ -75,43 +75,44 @@ class DataProcessor():
         return self
 
     def getCount(self, stockcode):
-        print('getCount')
-        print(stockcode)
+        stockcode = stockcode.lower()
+        __date = 0
+        __text = 1
         counter = DefaultDict(int)
         bydate = DefaultDict(str)
         buffer_date = ''
-
-        for row in self.dffilter.iterrows() :
-            try:
-                if chats != '':
-                    tanggal = chats["date"].split("T")[0]
-                    teks = self.dffilter["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
-                    teks_perkata = teks.split(" ")
-                    kode_saham = []
-                    if tanggal != buffer_date :
-                        counter = DefaultDict(int)
-                    else :
-                        pass
-                    cek_double = []
-                    for x in teks_perkata :
-                        if x not in cek_double :
-                            if x in self.stock_table.Kode.values :
-                                if x not in self.excluded_word.values :
-                                    kode_saham.append(x)
-                                    cek_double.append(x)
-                                    counter[x]+=1
-                                    bydate[tanggal]=copy.copy(counter)
-                                else :
-                                    continue
+        for index, row in self.dffilter.iterrows() :
+            # try:
+            if row[__text] != '' and isinstance(row[__text], str):
+                tanggal = row[__date].split("T")[0]
+                teks = row[__text].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+                teks_perkata = teks.split(" ")
+                kode_saham = []
+                if tanggal != buffer_date :
+                    counter = DefaultDict(int)
+                else :
+                    pass
+                cek_double = []
+                for x in teks_perkata :
+                    if x not in cek_double :
+                        if x in self.stock_table.Kode.values :
+                            if x not in self.excluded_word.values :
+                                kode_saham.append(x)
+                                cek_double.append(x)
+                                counter[x]+=1
+                                bydate[tanggal]=copy.copy(counter)
                             else :
                                 continue
                         else :
                             continue
-                    buffer_date = tanggal
-                else :
-                    continue
-            except:
+                    else :
+                        continue
+                buffer_date = tanggal
+            else :
                 continue
+            # except:
+            #     print('error ', row)
+            #     continue
 
 
         mention_counter = [bydate[x][stockcode] for x in bydate]
@@ -120,36 +121,30 @@ class DataProcessor():
         df = pd.DataFrame([mention_date,mention_counter]).transpose()
         df.columns = ('date','mentions')
         print(df.tail())
-        return df
+        return df[(df['date'] >= self.awal) & (df['date'] <= self.akhir)]
 
     '''
     mendapatkan pergerakan harga saham dari yahoo finance
     '''
     def getPergerakanHargaSaham(self, stockcode):
-        print('getPergerakanHargaSaham')
         check_stockcode = stockcode.find(".JK")
 
         if check_stockcode == -1:
             stockcode = (stockcode+".JK")
         else:
             stockcode
-        print(stockcode)
-        print(self.awal)
-        print(self.akhir)
         #Input stockcode ke Yahoo Finance
         stockinfo = yf.download(stockcode, start="{}".format(self.awal), end="{}".format(self.akhir))
         stock_price = stockinfo['Adj Close']
         #Mengambil Nama Perusahaan
         company_info = yf.Ticker("{}".format(stockcode))
         company_name = company_info.info["longName"]
-        print(company_info)
         return company_name, stock_price, DataFrame(stock_price)
 
     '''
     sanding data, memasukkan informasi price ke dataframe lain, utk keperluan plotting
     '''
     def sandingData(self, dfa, stockprice):
-        print('sanding data')
         dfprice = DataFrame(stockprice)
         # ubah index jadi column
         dfprice['date'] = dfprice.index
@@ -161,8 +156,10 @@ class DataProcessor():
         # add new column: price
         dfa1['price'] = dfp1['Adj Close'].tolist()
         # normalisasi
-        dfa1['mentions'] = (dfa1['mentions']/dfa1['mentions'].max())*100
-        dfa1['price'] = (dfa1['price']/dfa1['price'].max())*100
+        mention_max = dfa1['mentions'].max()
+        price_max = dfa1['price'].max()
+        dfa1['mentions'] = (dfa1['mentions']/(mention_max if mention_max > 0 else 1))*100
+        dfa1['price'] = (dfa1['price']/(price_max if price_max > 0 else 1))*100
         return dfa1
 
     def plot(self, dfa1, company_name):
