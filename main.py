@@ -134,6 +134,7 @@ class Application(Frame):
                 self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = '0000')
             else:
                 self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = str(self.selected_year_2.get())+'-'+self.selected_month_2.get()[:2])
+        print(self.dp.dffilter)
         lst = self.dp.getKodeSaham()
         self.cbSaham['values'] = lst
 
