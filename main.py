@@ -81,11 +81,13 @@ class Application(Frame):
 
         lblFrom = Label(frame, text='Dari')
         lblFrom.grid(row=1, column=0, sticky=W, padx=5)
+        # start bulan
         month_cb_1 = Combobox(frame, textvariable=self.selected_month_1)
         month_cb_1['values'] = months
         month_cb_1['state'] = 'readonly'  # normal
         month_cb_1.set('-- Pilih bulan --')
         month_cb_1.grid(row=2, column=0,padx=5, pady=5)
+        # start tahun
         year_cb_1 = Combobox(frame, textvariable=self.selected_year_1)
         year_cb_1['values'] = years
         year_cb_1['state'] = 'readonly'  # normal
@@ -93,11 +95,13 @@ class Application(Frame):
         year_cb_1.grid(row=3, column=0,padx=5, pady=5)
         lblTo = Label(frame, text='Ke')
         lblTo.grid(row=4, column=0, sticky=W, padx=5)
+        # end bulan
         month_cb_2 = Combobox(frame, textvariable=self.selected_month_2)
         month_cb_2['values'] = months
         month_cb_2['state'] = 'readonly'  # normal
         month_cb_2.set('-- Pilih bulan --')
         month_cb_2.grid( row=5, column=0,padx=5, pady=5)
+        # end tahun
         year_cb_2 = Combobox(frame, textvariable=self.selected_year_2)
         year_cb_2['values'] = years
         year_cb_2['state'] = 'readonly'  # normal
@@ -105,17 +109,22 @@ class Application(Frame):
         year_cb_2.grid(row=6, column=0,padx=5, pady=5)
         return frame
 
+    # open data file
     def openFile(self):
         name = fd.askopenfilename()
         self.lbl['text'] = self.lbl['text']+' '+name
         self.dp.load(name)
 
+    # show and hide frame
     def cbCallback(self):
         if(self.is_all_data.get() == 1):
             self.rangeFrame.grid_forget()
         else:
             self.rangeFrame.grid()
 
+    '''
+    filter data berdasarkan bulan dipilih
+    '''
     def filter(self):
         if(self.is_all_data.get()==1):
             self.dp.filter(awal = '0000', akhir='0000')
@@ -128,14 +137,22 @@ class Application(Frame):
         lst = self.dp.getKodeSaham()
         self.cbSaham['values'] = lst
 
+    '''
+    sanding data dari 2 paket data: mentions counter dan price dari yfinance
+    plot line graph
+    '''
     def proses(self):
         print('ini dari proses')
         stockcode = self.cbSaham.get()
         '''if(len(self.txSaham.get())>0):
             stockcode = self.txSaham.get()'''
+        # menghitung frekuensi mentions saham di chat
         dfa = self.dp.getCount(stockcode)
+        # mendapatkan stock price's series from yahoo finance
         __, stockprice, __ = self.db.getPergerakanHargaSaham(stockcode)
+        # sanding data
         df = self.dp.sandingData(dfa, stockprice)
+        # plot
         self.dp.plot(df)
 
 def main():
