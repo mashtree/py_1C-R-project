@@ -77,42 +77,45 @@ class DataProcessor():
         bydate = DefaultDict(str)
         buffer_date = ''
 
-        for chats in self.dffilter['message'] :
-            if chats != '':
-                tanggal = chats["date"].split("T")[0]
-		teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
-		teks_perkata = teks.split(" ")
-		kode_saham = []
-		if tanggal != buffer_date :
-		    counter = DefaultDict(int)
-		else :
-		    pass
-		cek_double = []
-		for x in teks_perkata :
-		    if x not in cek_double :
-			if x in self.stock_table.Kode.values :
-			    if x not in self.excluded_word.values :
-				kode_saham.append(x)
-				cek_double.append(x)
-				counter[x]+=1
-				bydate[tanggal]=copy.copy(counter)
-			    else :
-				continue
-			else :
-			    continue
-		    else :
-			continue
-		buffer_date = tanggal
-            else :
+        for row in self.dffilter.iterrows() :
+            try:
+                if chats != '':
+                    tanggal = chats["date"].split("T")[0]
+            		teks = self.dffilter["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+            		teks_perkata = teks.split(" ")
+            		kode_saham = []
+            		if tanggal != buffer_date :
+            		    counter = DefaultDict(int)
+            		else :
+            		    pass
+            		cek_double = []
+            		for x in teks_perkata :
+            		    if x not in cek_double :
+            			if x in self.stock_table.Kode.values :
+            			    if x not in self.excluded_word.values :
+            				kode_saham.append(x)
+            				cek_double.append(x)
+            				counter[x]+=1
+            				bydate[tanggal]=copy.copy(counter)
+            			    else :
+            				continue
+            			else :
+            			    continue
+            		    else :
+            			continue
+            		buffer_date = tanggal
+                        else :
+                            continue
+            except:
                 continue
-                
+
 
         mention_counter = [bydate[x][stockcode] for x in bydate]
         mention_date = [x for x in bydate]
 
         df = pd.DataFrame([mention_date,mention_counter]).transpose()
         df.columns = ('date','mentions')
-        print(df)
+        print(df.tail())
         return df
 
     def getPergerakanHargaSaham(self, stockcode):
@@ -131,3 +134,30 @@ class DataProcessor():
         company_info = yf.Ticker("{}".format(stockcode))
         company_name = company_info.info["longName"]
         return company_name, stock_price, Dataframe(stock_price)
+
+    def sandingData(self, dfa, stockprice):
+        dfprice = DataFrame(stock_price)
+        # ubah index jadi column
+        dfprice['date'] = dfprice.index
+        # proses menyandingkan data mentions dengan price berdasarkan tanggal
+        dfa_date = dfa['date'].tolist()
+        dfp1 = dfprice[dfprice['date'].isin(dfa_date)]
+        dfp1['date'] = dfp1['date'].astype(str)
+        dfa1 = dfa[dfa['date'].isin(dfp1['date'].tolist())]
+        # add new column: price
+        dfa1['price'] = dfp1['Adj Close'].tolist()
+        # normalisasi
+        dfa1['mentions'] = (dfa1['mentions']/dfa1['mentions'].max())*100
+        dfa1['price'] = (dfa1['price']/dfa1['price'].max())*100
+        return dfa1
+
+    def plot(self, dfa1):
+        plt.figure(figsize=(15,6))
+        plt.title("Pergerakan Harga Saham "+company_name)
+        # plt.plot(stock_price)
+        plt.plot( 'date', 'mentions', data=dfa1, marker='o', markerfacecolor='blue', markersize=12, color='skyblue', linewidth=4)
+        plt.plot( 'date', 'price', data=dfa1, marker='', color='olive', linewidth=2)
+        # show legend
+        plt.legend()
+        # show graph
+        plt.show()
