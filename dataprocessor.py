@@ -31,7 +31,7 @@ class DataProcessor():
             return
 
     '''
-    method utk mendapatkan list kode saham dalam rentang waktu tertentu
+    method utk mendapatkan list kode saham dari data chat dalam rentang waktu tertentu
     '''
     def getKodeSaham(self):
         # iterate over range
@@ -50,7 +50,7 @@ class DataProcessor():
     def filter(self, awal = '0000', akhir='0000'):
         is_all = False
         if('0000' in awal and '0000' in akhir):
-            pass
+            pass # sementara tidak dilakukan, data terlalu besar
         elif('0000' not in awal and '0000' in akhir):
             is_all = True
             self.awal = awal
@@ -118,6 +118,9 @@ class DataProcessor():
         print(df.tail())
         return df
 
+    '''
+    mendapatkan pergerakan harga saham dari yahoo finance
+    '''
     def getPergerakanHargaSaham(self, stockcode):
         check_stockcode = stockcode.find(".JK")
 
@@ -134,7 +137,9 @@ class DataProcessor():
         company_info = yf.Ticker("{}".format(stockcode))
         company_name = company_info.info["longName"]
         return company_name, stock_price, Dataframe(stock_price)
-
+    '''
+    sanding data, memasukkan informasi price ke dataframe lain, utk keperluan plotting
+    '''
     def sandingData(self, dfa, stockprice):
         dfprice = DataFrame(stock_price)
         # ubah index jadi column
