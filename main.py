@@ -1,9 +1,9 @@
-from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL, SOLID, END
+from tkinter import Tk, Text, messagebox, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL, SOLID, END
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator, Progressbar
 from tkinter import filedialog as fd
 import pandas as pd
-import csv
 from dataprocessor import DataProcessor
+import datetime
 
 
 class Application(Frame):
@@ -142,13 +142,21 @@ class Application(Frame):
     filter data berdasarkan bulan dipilih
     '''
     def filter(self):
+        if self.dp.df is None:
+            messagebox.showerror("Error", "Data kosong")
+            return
         if(self.is_all_data.get()==1):
             self.dp.filter(awal = '0000', akhir='0000')
         else:
             if('Pilih' not in ''.join([self.selected_year_1.get(),self.selected_month_1.get()]) and 'Pilih' in ''.join([self.selected_year_2.get(),self.selected_month_2.get()])):
                 self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = '0000')
             else:
-                self.dp.filter(awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2], akhir = str(self.selected_year_2.get())+'-'+self.selected_month_2.get()[:2])
+                awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2]
+                akhir = str(self.selected_year_2.get())+'-'+self.selected_month_2.get()[:2]
+                if datetime.datetime.strptime(awal, '%Y-%m') > datetime.datetime.strptime(akhir, '%Y-%m'):
+                    messagebox.showerror("Error", "Waktu awal > Waktu akhir")
+                    return
+                self.dp.filter(awal = awal, akhir = akhir)
         print(self.dp.dffilter)
         lst = self.dp.getKodeSaham()
         self.cbSaham['values'] = lst
@@ -158,7 +166,9 @@ class Application(Frame):
     plot line graph
     '''
     def proses(self):
-        print('ini dari proses')
+        if self.dp.dffilter is None:
+            messagebox.showerror("Error", "Data kosong")
+            return
         stockcode = self.cbSaham.get()
         '''if(len(self.txSaham.get())>0):
             stockcode = self.txSaham.get()'''
@@ -170,6 +180,7 @@ class Application(Frame):
         print(dfstock.shape)
         # sanding data
         dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
+        self.area.delete('1.0', END)
         self.area.insert(END, dfbefnorm)
         # plot
         self.dp.plot(self.right_frame, dfnorm, company_name)
