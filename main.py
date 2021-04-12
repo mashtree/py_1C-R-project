@@ -148,12 +148,15 @@ class Application(Frame):
             stockcode = self.txSaham.get()'''
         # menghitung frekuensi mentions saham di chat
         dfa = self.dp.getCount(stockcode)
+        print(dfa.shape)
         # mendapatkan stock price's series from yahoo finance
-        __, stockprice, __ = self.db.getPergerakanHargaSaham(stockcode)
+        company_name, stockprice, dfstock = self.dp.getPergerakanHargaSaham(stockcode)
+        print(dfstock.shape)
         # sanding data
         df = self.dp.sandingData(dfa, stockprice)
+        print(df.shape)
         # plot
-        self.dp.plot(df)
+        self.dp.plot(df, company_name)
 
 def main():
 
