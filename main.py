@@ -141,9 +141,9 @@ class Application(Frame):
     def proses(self):
         print('ini dari proses')
         stockcode = self.cbSaham.get()
-        if(len(self.txSaham.get())>0):
-            stockcode = self.txSaham.get()
-        df = self.getCount(stockcode)
+        '''if(len(self.txSaham.get())>0):
+            stockcode = self.txSaham.get()'''
+        df = self.dp.getCount(stockcode)
         # TODO
         # mendapatkan data yfinance dan menyandingkan dengan data stock dalam satu tabel
         # ---------------------------------------

@@ -72,46 +72,45 @@ class DataProcessor():
         return self
 
     def getCount(self, stockcode):
+        print(stockcode)
         counter = DefaultDict(int)
         bydate = DefaultDict(str)
         buffer_date = ''
 
-        for chats in self.dffilter['messages'] :
-            try :
-                if chats['text'] != '':
-                    tanggal = chats["date"].split("T")[0]
-                    pengirim = chats["from"]
-                    teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
-                    teks_perkata = teks.split(" ")
-                    kode_saham = []
-                    if tanggal != buffer_date :
-                        counter = DefaultDict(int)
-                    else :
-                        pass
-                    cek_double = []
-                    for x in teks_perkata :
-                        if x not in cek_double :
-                            if x in self.stock_table.Kode.values :
-                                if x not in self.excluded_word.values :
-                                    kode_saham.append(x)
-                                    cek_double.append(x)
-                                    counter[x]+=1
-                                    bydate[tanggal]=copy.copy(counter)
-                                else :
-                                    continue
-                            else :
-                                continue
-                        else :
-                            continue
-                    buffer_date = tanggal
-                else :
-                    continue
-            except :
+        for chats in self.dffilter['message'] :
+            if chats != '':
+                tanggal = chats["date"].split("T")[0]
+		teks = chats["text"].replace("\n"," ").replace(",", " ").replace("."," ").lower()
+		teks_perkata = teks.split(" ")
+		kode_saham = []
+		if tanggal != buffer_date :
+		    counter = DefaultDict(int)
+		else :
+		    pass
+		cek_double = []
+		for x in teks_perkata :
+		    if x not in cek_double :
+			if x in self.stock_table.Kode.values :
+			    if x not in self.excluded_word.values :
+				kode_saham.append(x)
+				cek_double.append(x)
+				counter[x]+=1
+				bydate[tanggal]=copy.copy(counter)
+			    else :
+				continue
+			else :
+			    continue
+		    else :
+			continue
+		buffer_date = tanggal
+            else :
                 continue
+                
 
         mention_counter = [bydate[x][stockcode] for x in bydate]
         mention_date = [x for x in bydate]
 
         df = pd.DataFrame([mention_date,mention_counter]).transpose()
         df.columns = ('date','mentions')
+        print(df)
         return df
