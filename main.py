@@ -56,15 +56,16 @@ class Application(Frame):
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 kodeSaham.append(row['Kode'])
-        kodeSaham.sort()
-        
-        cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
-        cbSaham['values'] = kodeSaham
-        cbSaham['state'] = 'readonly'  # normal
-        cbSaham.set('-- Pilih Saham --')
-        cbSaham.grid(row=6, column=0,padx=5, pady=5)
+        self.kodeSaham.sort()
+        self.txSaham = Text(self.left_frame)
+        self.cbSaham.grid(row=6, column=0,padx=5, pady=5)
+        self.cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
+        self.cbSaham['values'] = kodeSaham
+        self.cbSaham['state'] = 'readonly'  # normal
+        self.cbSaham.set('-- Pilih Saham --')
+        self.cbSaham.grid(row=7, column=0,padx=5, pady=5)
         btnProses = Button(self.left_frame, text="proses", command=self.proses)
-        btnProses.grid(row=7, column=0, sticky=W, padx=5)
+        btnProses.grid(row=8, column=0, sticky=W, padx=5)
 
         # month_cb.bind('<<ComboboxSelected>>', month_changed)
 
@@ -79,8 +80,8 @@ class Application(Frame):
 
     def rangeFrame(self):
         frame = Frame(self.left_frame, borderwidth = 1)
-        months = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+        months = ('01-Jan', '02-Feb', '03-Mar', '04-Apr', '05-May', '06-Jun',
+        '07-Jul', '08-Aug', '09-Sep', '10-Oct', '11-Nov', '12-Dec')
         years = (2018, 2019, 2020, 2021)
 
         lblFrom = Label(frame, text='Dari')
@@ -122,17 +123,31 @@ class Application(Frame):
 
     def filter(self):
         if(self.is_all_data.get()==1):
-            print('pilihan semua')
+            self.dp.filter(awal = '0000', akhir='0000')
+        else:
+            if('Pilih' not in ''.join([this.selected_year_1.get(),this.selected_month_1.get() and 'Pilih' in ''.join([this.selected_year_2.get(),this.selected_month_2.get()):
+                self.dp.filter(awal = str(this.selected_year_1.get())+'-'+this.selected_month_1.get()[:2], akhir = '0000')
+            else:
+                self.dp.filter(awal = str(this.selected_year_1.get())+'-'+this.selected_month_1.get()[:2], akhir = str(this.selected_year_2.get())+'-'+this.selected_month_2.get()[:2])
+        lst = self.dp.getKodeSaham()
+        cbSaham['values'] = lst
 
     def proses(self):
         print('ini dari proses')
+        stockcode = self.cbSaham.get()
+        if(len(self.txSaham.get())>0):
+            stockcode = self.txSaham.get()
+        df = self.getCount(stockcode)
+        # TODO
+        # mendapatkan data yfinance dan menyandingkan dengan data stock dalam satu tabel
+        # ---------------------------------------
         # jika hanya 'Dari' maka proses bulan tersebut
-        if(self.is_all_data.get()==1):
-            print('all data')
-        else:
-            print('filter')
-            if('Pilih' in self.selected_month_2.get() or 'Pilih' in self.selected_year_2.get()):
-                print('proses satu bulan')
+        # if(self.is_all_data.get()==1):
+        #     print('all data')
+        # else:
+        #     print('filter')
+        #     if('Pilih' in self.selected_month_2.get() or 'Pilih' in self.selected_year_2.get()):
+        #         print('proses satu bulan')
 
 
 
