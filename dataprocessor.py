@@ -3,6 +3,7 @@ import calendar as cal
 import os
 from typing import DefaultDict
 import copy
+import datetime
 
 class DataProcessor():
 
@@ -54,18 +55,20 @@ class DataProcessor():
             is_all = True
             self.awal = awal
             d = datetime.datetime.strptime(self.awal, '%Y-%m')
-            self.awal = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
-            self.akhir = d.year+'-{:02d}'.format(d.month)+'-{:02d}'.format(calendar.monthrange(d.year, d.month)[1])
+            self.awal = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
+            self.akhir = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(calendar.monthrange(d.year, d.month)[1])
         else:
             is_all = True
             da = datetime.datetime.strptime(awal, '%Y-%m')
-            self.awal = da.year+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
+            self.awal = datetime.datetime.strptime(awal, '%Y-%m')
+            #str(da.year)+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
             dk = datetime.datetime.strptime(akhir, '%Y-%m')
-            self.akhir = dk.year+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
+            self.akhir = datetime.datetime.strptime(akhir, '%Y-%m')
+            #str(dk.year)+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
         if is_all:
-            self.dffilter = pd.DataFrame([x for x in df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
+            self.dffilter = pd.DataFrame([x for x in self.df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= self.awal and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= self.akhir])[['date','text']]
         else:
-            self.dffilter = pd.DataFrame([x for x in df['messages']])[['date','text']]
+            self.dffilter = pd.DataFrame([x for x in self.df['messages']])[['date','text']]
         return self
 
     def getCount(self, stockcode):
