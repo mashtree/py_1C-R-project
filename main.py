@@ -1,4 +1,4 @@
-from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL
+from tkinter import Tk, Text, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL, SOLID, END
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator, Progressbar
 from tkinter import filedialog as fd
 import pandas as pd
@@ -33,9 +33,13 @@ class Application(Frame):
         self.lbl = Label(self, text="Filename: ")
         self.lbl.grid(sticky=W, pady=4, padx=5, columnspan=4)
 
-        area = Text(self)
-        area.grid(row=1, column=2, columnspan=3, rowspan=4,
+        self.right_frame = Frame(self, width=800, height=400, borderwidth = 1)
+        self.right_frame.grid(row=2, column=1, columnspan=5, rowspan=4,
             padx=5, sticky=E+W+S+N)
+        self.right_frame.config(relief=SOLID)
+        self.area = Text(self.right_frame, height = 30, width = 40)
+        self.area.grid(row=0, column=1,
+            padx=5, sticky=W+S+N+E)
         # upload
         # lblUpload = Label(self, text="upload")
         # lblUpload.grid(row=1, column=0, columnspan=2)
@@ -43,8 +47,9 @@ class Application(Frame):
         abtn.grid(row=1, column=0, sticky=W, padx=5)
         self.left_frame = Frame(self, width=200, height=400, borderwidth = 1)
         self.left_frame.grid(row=2, column=0)
-        self.chkBox = Checkbutton(self.left_frame, text = "All data", variable=self.is_all_data, command=self.cbCallback)
-        self.chkBox.grid(row=1, column=0, sticky=W, padx=5)
+        self.left_frame.config(relief=SOLID)
+        # self.chkBox = Checkbutton(self.left_frame, text = "All data", variable=self.is_all_data, command=self.cbCallback)
+        # self.chkBox.grid(row=1, column=0, sticky=W, padx=5)
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=2, columnspan=1, ipadx=75, padx=5, sticky=W)
         self.rangeFrame = self.rangeFrame() #Frame(self.left_frame, borderwidth = 1)
         self.rangeFrame.grid(row=3, column=0, columnspan=2)
@@ -81,7 +86,7 @@ class Application(Frame):
             length=150
         )
         self.pb.start()
-        self.pb.grid(column=0, row=10, columnspan=2, padx=10, pady=20)
+        # self.pb.grid(column=0, row=10, columnspan=2, padx=10, pady=20)
 
 
     def rangeFrame(self):
@@ -164,15 +169,15 @@ class Application(Frame):
         company_name, stockprice, dfstock = self.dp.getPergerakanHargaSaham(stockcode)
         print(dfstock.shape)
         # sanding data
-        df = self.dp.sandingData(dfa, stockprice)
-        print(df.shape)
+        dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
+        self.area.insert(END, dfbefnorm)
         # plot
-        self.dp.plot(df, company_name)
+        self.dp.plot(self.right_frame, dfnorm, company_name)
 
 def main():
 
     root = Tk()
-    root.geometry("650x450+300+300")
+    root.geometry("1450x550+300+300")
     app = Application()
     root.mainloop()
 

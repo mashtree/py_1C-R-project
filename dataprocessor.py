@@ -7,6 +7,7 @@ import copy
 import datetime
 import yfinance as yf
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class DataProcessor():
 
@@ -155,21 +156,36 @@ class DataProcessor():
         dfa1 = dfa[dfa['date'].isin(dfp1['date'].tolist())]
         # add new column: price
         dfa1['price'] = dfp1['Adj Close'].tolist()
+        dfa2 = dfa1.copy(deep=True)
         # normalisasi
         mention_max = dfa1['mentions'].max()
         price_max = dfa1['price'].max()
         dfa1['mentions'] = (dfa1['mentions']/(mention_max if mention_max > 0 else 1))*100
         dfa1['price'] = (dfa1['price']/(price_max if price_max > 0 else 1))*100
-        return dfa1
+        return dfa1, dfa2
 
-    def plot(self, dfa1, company_name):
+    def plot(self, root, dfa1, company_name):
         print('plot')
-        plt.figure(figsize=(15,6))
-        plt.title("Pergerakan Harga Saham "+company_name)
+        figure1 = plt.Figure(figsize=(9,5), dpi=100)
+        ax1 = figure1.add_subplot(111)
+        bar1 = FigureCanvasTkAgg(figure1, root)
+        bar1.get_tk_widget().grid(row=0, column=2)
+        # df1 = df1[['Country','GDP_Per_Capita']].groupby('Country').sum()
+        # df1.plot(kind='bar', legend=True, ax=ax1)
+        df1 = dfa1[['date','mentions']].groupby('date').sum()
+        df1.plot( kind='line', legend=True, ax=ax1, color='skyblue',marker='o', fontsize=10)
+        df2 = dfa1[['date', 'price']].groupby('date').sum()
+        df2.plot( kind='line', legend=True, ax=ax1, marker='', color='olive', linewidth=2)
+        # plt.legend()
+        ax1.set_title("Pergerakan Harga Saham "+company_name)
+
+
+        # plt.figure(figsize=(15,6))
+        # plt.title("Pergerakan Harga Saham "+company_name)
         # plt.plot(stock_price)
-        plt.plot( 'date', 'mentions', data=dfa1, marker='o', markerfacecolor='blue', markersize=12, color='skyblue', linewidth=4)
-        plt.plot( 'date', 'price', data=dfa1, marker='', color='olive', linewidth=2)
+        # plt.plot( 'date', 'mentions', data=dfa1, marker='o', markerfacecolor='blue', markersize=12, color='skyblue', linewidth=4)
+        # plt.plot( 'date', 'price', data=dfa1, marker='', color='olive', linewidth=2)
         # show legend
-        plt.legend()
+        # plt.legend()
         # show graph
-        plt.show()
+        # plt.show()
