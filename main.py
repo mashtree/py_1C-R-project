@@ -181,7 +181,7 @@ class Application(Frame):
         # sanding data
         dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
         self.area.delete('1.0', END)
-        self.area.insert(END, dfbefnorm)
+        self.area.insert(END, 'correlation {0}\n\n {1}'.format(self.dp.corr(dfnorm), dfbefnorm))
         # plot
         self.dp.plot(self.right_frame, dfnorm, company_name)
 

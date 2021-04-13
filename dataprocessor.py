@@ -8,6 +8,7 @@ import datetime
 import yfinance as yf
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 class DataProcessor():
 
@@ -191,3 +192,8 @@ class DataProcessor():
         # plt.legend()
         # show graph
         # plt.show()
+
+    def corr(self, dfa):
+        dfa['mentions']=np.float64(dfa['mentions'])
+        dfa['price']=np.float64(dfa['price'])
+        return dfa['mentions'].corr(dfa['price'])
