@@ -4,6 +4,7 @@ from tkinter import filedialog as fd
 import pandas as pd
 from dataprocessor import DataProcessor
 import datetime
+import threading
 
 
 class Application(Frame):
@@ -160,6 +161,7 @@ class Application(Frame):
         print(self.dp.dffilter)
         lst = self.dp.getKodeSaham()
         self.cbSaham['values'] = lst
+        messagebox.showerror("Info", "filter selesai")
 
     '''
     sanding data dari 2 paket data: mentions counter dan price dari yfinance
@@ -174,12 +176,13 @@ class Application(Frame):
             stockcode = self.txSaham.get()'''
         # menghitung frekuensi mentions saham di chat
         dfa = self.dp.getCount(stockcode)
-        print(dfa.shape)
+        print('dfa ',dfa.shape)
         # mendapatkan stock price's series from yahoo finance
         company_name, stockprice, dfstock = self.dp.getPergerakanHargaSaham(stockcode)
-        print(dfstock.shape)
+        print('dfstock ', dfstock.shape)
         # sanding data
         dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
+        print('sandingData--- ')
         self.area.delete('1.0', END)
         self.area.insert(END, 'correlation {0}\n\n {1}'.format(self.dp.corr(dfnorm), dfbefnorm))
         # plot

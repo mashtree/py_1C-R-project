@@ -162,9 +162,13 @@ class DataProcessor():
         dfa2 = dfa1.copy(deep=True)
         # normalisasi
         mention_max = dfa1['mentions'].max()
+        mention_min = dfa1['mentions'].min()
         price_max = dfa1['price'].max()
-        dfa1['mentions'] = (dfa1['mentions']/(mention_max if mention_max > 0 else 1))*100
-        dfa1['price'] = (dfa1['price']/(price_max if price_max > 0 else 1))*100
+        price_min = dfa1['price'].min()
+        # dfa1['mentions'] = (dfa1['mentions']/(mention_max if mention_max > 0 else 1))*100
+        # dfa1['price'] = (dfa1['price']/(price_max if price_max > 0 else 1))*100
+        dfa1['mentions'] = ((dfa1['mentions']-mention_min)/((mention_max-mention_min) if (mention_max-mention_min) > 0 else 1))*100
+        dfa1['price'] = ((dfa1['price']-price_min)/((price_max-price_min) if (price_max-price_min) > 0 else 1))*100
         return dfa1, dfa2
 
     def plot(self, root, dfa1, company_name):
