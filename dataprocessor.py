@@ -54,17 +54,17 @@ class DataProcessor():
     method utk memfilter data berdasarkan range yg dipilih, disimpan dalam df baru
     '''
     def filter(self, awal = '0000', akhir='0000'):
-        is_all = False
+        is_all = True
         if('0000' in awal and '0000' in akhir):
             pass # sementara tidak dilakukan, data terlalu besar
         elif('0000' not in awal and '0000' in akhir):
-            is_all = True
+            is_all = False
             self.awal = awal
             d = datetime.datetime.strptime(self.awal, '%Y-%m')
             self.awal = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(d.day)
             self.akhir = str(d.year)+'-{:02d}'.format(d.month)+'-{:02d}'.format(cal.monthrange(d.year, d.month)[1])
         else:
-            is_all = True
+            is_all = False
             da = datetime.datetime.strptime(awal, '%Y-%m')
             self.awal = str(da.year)+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day) #datetime.datetime.strptime(awal, '%Y-%m')
             #str(da.year)+'-{:02d}'.format(da.month)+'-{:02d}'.format(da.day)
@@ -72,9 +72,9 @@ class DataProcessor():
             self.akhir = str(dk.year)+'-{:02d}'.format(dk.month)+'-{:02d}'.format(cal.monthrange(dk.year, dk.month)[1]) #datetime.datetime.strptime(akhir, '%Y-%m')
             #str(dk.year)+'-{:02d}'.format(dk.month)+'-{:02d}'.format(dk.day)
         if is_all:
-            self.dffilter = pd.DataFrame([x for x in self.df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= datetime.datetime.strptime(self.awal, '%Y-%m-%d') and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= datetime.datetime.strptime(self.akhir, '%Y-%m-%d')])[['date','text']]
-        else:
             self.dffilter = pd.DataFrame([x for x in self.df['messages']])[['date','text']]
+        else:
+            self.dffilter = pd.DataFrame([x for x in self.df['messages'] if datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') >= datetime.datetime.strptime(self.awal, '%Y-%m-%d') and datetime.datetime.strptime(x['date'][:10], '%Y-%m-%d') <= datetime.datetime.strptime(self.akhir, '%Y-%m-%d')])[['date','text']]
         return self
 
     def getCount(self, stockcode):
