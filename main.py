@@ -49,7 +49,7 @@ class Application(Frame):
         self.splash.overrideredirect(True)
         self.splash.geometry('200x23+100+100')
         self.splash.overrideredirect(1)
-        # self.splash.bind("<B1-Motion>", self.move_window)
+        self.splash.bind("<B1-Motion>", self.move_window)
         self.splash.attributes('-topmost', 'true')
         window_height = 23
         window_width = 400
@@ -172,6 +172,10 @@ class Application(Frame):
         if self.dp.df is None:
             messagebox.showerror("Error", "Data kosong")
             return
+        if 'messages' not in self.dp.df:
+             messagebox.showerror("Error", "Data tidak sesuai atau bukan dari log Telegram")
+             return
+
         if(self.is_all_data.get()==1):
             self.dp.filter(awal = '0000', akhir='0000')
         else:

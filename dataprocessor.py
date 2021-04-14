@@ -110,6 +110,10 @@ class DataProcessor():
                             continue
                     else :
                         continue
+                # teks_rep = ' '.join([x for x in teks if x not in self.excluded_word.values])
+                # if teks_rep.find(stockcode) != -1: # diganti ini
+                #     counter[stockcode]+=1
+                #     bydate[tanggal]=copy.copy(counter)
                 buffer_date = tanggal
             else :
                 continue
