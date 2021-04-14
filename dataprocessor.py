@@ -43,9 +43,12 @@ class DataProcessor():
         # iterate over range
         lstKode = set()
         texts = ','.join([i.lower() for i in self.dffilter['text'] if  isinstance(i,str)])
-        for i in self.stock_table.Kode.values:
-            if i.lower() in texts:
-                lstKode.add(i.upper())
+        # for i in self.stock_table.Kode.values:
+        #     if i.lower() in texts:
+        #         lstKode.add(i.upper())
+        for i in range(len(self.stock_table.Kode)):
+            if self.stock_table.Kode[i].lower() in texts:
+                lstKode.add('{} - {}'.format(self.stock_table.Kode[i].upper(),self.stock_table.Company[i]))
         lst = list(lstKode)
         lst.sort()
         return lst

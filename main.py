@@ -167,15 +167,17 @@ class Application(Frame):
     filter data berdasarkan bulan dipilih
     '''
     def filter(self):
+        if self.dp.df is None:
+            messagebox.showerror("Error", "Data kosong, silahkan upload data")
+            return
+        if 'messages' not in self.dp.df.columns:
+            messagebox.showerror("Error", "Data tidak sesuai atau bukan dari log Telegram")
+            return
+        if 'pilih' in self.selected_year_1.get().lower() or 'pilih' in self.selected_month_1.get().lower():
+            messagebox.showerror("Error", "Bulan dan Tahun awal harus dipilih!")
+            return
         self.disableButton()
         self.splash.deiconify()
-        if self.dp.df is None:
-            messagebox.showerror("Error", "Data kosong")
-            return
-        if 'messages' not in self.dp.df:
-             messagebox.showerror("Error", "Data tidak sesuai atau bukan dari log Telegram")
-             return
-
         if(self.is_all_data.get()==1):
             self.dp.filter(awal = '0000', akhir='0000')
         else:
@@ -205,11 +207,15 @@ class Application(Frame):
     def proses(self):
 
         if self.dp.dffilter is None:
-            messagebox.showerror("Error", "Data kosong")
+            messagebox.showerror("Error", "Data kosong silahkan filter data terlebih dahulu")
             return
+        stockcode = self.cbSaham.get()
+        if 'pilih' in stockcode.lower():
+            messagebox.showerror("Error", "Kode saham belum dipilih!")
+            return
+        stockcode = stockcode.split()[0]
         self.disableButton()
         self.splash.deiconify()
-        stockcode = self.cbSaham.get()
         '''if(len(self.txSaham.get())>0):
             stockcode = self.txSaham.get()'''
         # menghitung frekuensi mentions saham di chat
