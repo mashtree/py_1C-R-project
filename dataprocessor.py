@@ -37,7 +37,7 @@ class DataProcessor():
         return 'load file berhasil'
 
     '''
-    method utk mendapatkan list kode saham dari data chat dalam rentang waktu tertentu
+    method utk mendapatkan list kode saham dari data chat
     '''
     def getKodeSaham(self):
         # iterate over range

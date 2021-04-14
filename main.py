@@ -187,6 +187,8 @@ class Application(Frame):
                 awal = str(self.selected_year_1.get())+'-'+self.selected_month_1.get()[:2]
                 akhir = str(self.selected_year_2.get())+'-'+self.selected_month_2.get()[:2]
                 if datetime.datetime.strptime(awal, '%Y-%m') > datetime.datetime.strptime(akhir, '%Y-%m'):
+                    self.disableButton(False)
+                    self.splash.withdraw()
                     messagebox.showerror("Error", "Waktu awal > Waktu akhir")
                     return
                 self.dp.filter(awal = awal, akhir = akhir)
