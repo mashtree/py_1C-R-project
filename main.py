@@ -1,12 +1,17 @@
-from tkinter import Tk, Text, messagebox, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL, SOLID, END
+from tkinter import Tk, Text, messagebox, BOTH, W, N, E, S, StringVar, IntVar, HORIZONTAL, SOLID, END, Toplevel, Label as Lbl, NORMAL, DISABLED
 from tkinter.ttk import Frame, Button, Label, Style, Checkbutton, Combobox, Separator, Progressbar
 from tkinter import filedialog as fd
 import pandas as pd
 from dataprocessor import DataProcessor
 import datetime
 import threading
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
+'''
+moving Toplevel ref:
+- https://stackoverflow.com/questions/4055267/tkinter-mouse-drag-a-window-without-borders-eg-overridedirect1
+'''
 class Application(Frame):
 
     def __init__(self):
@@ -17,8 +22,7 @@ class Application(Frame):
         self.selected_month_2 = StringVar()
         self.selected_year_2 = StringVar()
         self.selected_saham = StringVar()
-        self.dp = DataProcessor()
-
+        self.finished = False
         self.initUI()
 
     def initUI(self):
@@ -41,6 +45,31 @@ class Application(Frame):
         self.area = Text(self.right_frame, height = 30, width = 40)
         self.area.grid(row=0, column=1,
             padx=5, sticky=W+S+N+E)
+        self.splash = Toplevel(self.right_frame)
+        self.splash.overrideredirect(True)
+        self.splash.geometry('200x23+100+100')
+        self.splash.overrideredirect(1)
+        # self.splash.bind("<B1-Motion>", self.move_window)
+        self.splash.attributes('-topmost', 'true')
+        window_height = 23
+        window_width = 400
+
+        screen_width = self.splash.winfo_screenwidth()
+        screen_height = self.splash.winfo_screenheight()
+
+        x_cordinate = int((screen_width/2) - (window_width/2))
+        y_cordinate = int((screen_height/2) - (window_height/2))
+
+        self.splash.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+        self.splash.withdraw()
+        pb = Progressbar(self.splash,
+                orient=HORIZONTAL,
+                length=400)
+        pb.config(mode='indeterminate')
+        pb.start(10)
+        pb.grid(row=1, column=1, sticky=W+E+S+N)
+        # self.splash.withdraw()
+        self.dp = DataProcessor()
         # upload
         # lblUpload = Label(self, text="upload")
         # lblUpload.grid(row=1, column=0, columnspan=2)
@@ -56,17 +85,10 @@ class Application(Frame):
         self.rangeFrame.grid(row=3, column=0, columnspan=2)
 
         # Button Filter
-        btnFilter = Button(self.left_frame, text="Filter", command=self.filter)
-        btnFilter.grid(row=4, column=0, sticky=W, padx=5)
+        self.btnFilter = Button(self.left_frame, text="Filter", command=self.callFilter)
+        self.btnFilter.grid(row=4, column=0, sticky=W, padx=5)
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=5, columnspan=1, ipadx=75, padx=5, sticky=W)
 
-        # Combobox Pilih Saham
-        # self.kodeSaham = []
-        # with open('StockList.csv') as csv_file:
-        #     csv_reader = csv.DictReader(csv_file)
-        #     for row in csv_reader:
-        #         self.kodeSaham.append(row['Kode'].upper()) # Kode untuk mengambil data dari stocklist kolom kode
-        # self.kodeSaham.sort()
         self.txSaham = Text(self.left_frame)
 
         self.cbSaham = Combobox(self.left_frame, textvariable=self.selected_saham)
@@ -76,18 +98,9 @@ class Application(Frame):
         self.cbSaham.grid(row=7, column=0,padx=5, pady=5)
 
         # Buton Proses
-        btnProses = Button(self.left_frame, text="proses", command=self.proses)
-        btnProses.grid(row=8, column=0, sticky=W, padx=5)
+        self.btnProses = Button(self.left_frame, text="proses", command=self.callProses)
+        self.btnProses.grid(row=8, column=0, sticky=W, padx=5)
         Separator(self.left_frame,orient=HORIZONTAL).grid(row=9, columnspan=1, ipadx=75, padx=5, sticky=W)
-        # progressbar
-        self.pb = Progressbar(
-            self.left_frame,
-            orient='horizontal',
-            mode='indeterminate',
-            length=150
-        )
-        self.pb.start()
-        # self.pb.grid(column=0, row=10, columnspan=2, padx=10, pady=20)
 
 
     def rangeFrame(self):
@@ -130,7 +143,10 @@ class Application(Frame):
     def openFile(self):
         name = fd.askopenfilename()
         self.lbl['text'] = self.lbl['text']+' '+name
-        self.dp.load(name)
+        self.splash.deiconify()
+        msg = self.dp.load(name)
+        self.splash.withdraw()
+        messagebox.showinfo("Info", msg)
 
     # show and hide frame
     def cbCallback(self):
@@ -139,10 +155,20 @@ class Application(Frame):
         else:
             self.rangeFrame.grid()
 
+    def disableButton(self, disable=True):
+        if disable:
+            self.btnFilter['state'] = DISABLED
+            self.btnProses['state'] = DISABLED
+        else:
+            self.btnFilter['state'] = NORMAL
+            self.btnProses['state'] = NORMAL
+
     '''
     filter data berdasarkan bulan dipilih
     '''
     def filter(self):
+        self.disableButton()
+        self.splash.deiconify()
         if self.dp.df is None:
             messagebox.showerror("Error", "Data kosong")
             return
@@ -161,16 +187,24 @@ class Application(Frame):
         print(self.dp.dffilter)
         lst = self.dp.getKodeSaham()
         self.cbSaham['values'] = lst
-        messagebox.showerror("Info", "filter selesai")
+        self.splash.withdraw()
+        messagebox.showinfo("Info", "filter selesai")
+        self.disableButton(False)
+
+    def callFilter(self):
+        threading.Thread(target=self.filter).start()
 
     '''
     sanding data dari 2 paket data: mentions counter dan price dari yfinance
     plot line graph
     '''
     def proses(self):
+
         if self.dp.dffilter is None:
             messagebox.showerror("Error", "Data kosong")
             return
+        self.disableButton()
+        self.splash.deiconify()
         stockcode = self.cbSaham.get()
         '''if(len(self.txSaham.get())>0):
             stockcode = self.txSaham.get()'''
@@ -178,15 +212,53 @@ class Application(Frame):
         dfa = self.dp.getCount(stockcode)
         print('dfa ',dfa.shape)
         # mendapatkan stock price's series from yahoo finance
-        company_name, stockprice, dfstock = self.dp.getPergerakanHargaSaham(stockcode)
+        self.company_name, stockprice, dfstock = self.dp.getPergerakanHargaSaham(stockcode)
         print('dfstock ', dfstock.shape)
         # sanding data
-        dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
+        self.dfnorm, dfbefnorm = self.dp.sandingData(dfa, stockprice)
         print('sandingData--- ')
         self.area.delete('1.0', END)
-        self.area.insert(END, 'correlation {0}\n\n {1}'.format(self.dp.corr(dfnorm), dfbefnorm))
-        # plot
-        self.dp.plot(self.right_frame, dfnorm, company_name)
+        self.area.insert(END, 'correlation {0}\n\n {1}'.format(self.dp.corr(self.dfnorm), dfbefnorm))
+        # # plot
+        # self.plot(self.right_frame, self.dfnorm, self.company_name)
+        self.finished = True
+        self.disableButton(False)
+        self.splash.withdraw()
+
+
+    def callProses(self):
+        # kami memanfaatkan link ini untuk mengetahui bahwa thread sudah selesai
+        # https://stackoverflow.com/a/56010976
+        POLLING_DELAY = 250  # ms
+        lock = threading.Lock()  # Lock for shared resources.
+        def check_status():
+            with lock:
+                if not self.finished:
+                    self.after(POLLING_DELAY, check_status)  # Keep polling.
+                else:
+                    self.plot(self.right_frame, self.dfnorm, self.company_name)
+        with lock:
+            self.finished = False
+        t = threading.Thread(target=self.proses)
+        t.daemon = True
+        self.after(POLLING_DELAY, check_status)  # Start polling.
+        t.start()
+
+    def move_window(self, e):
+        self.splash.geometry(f'+{e.x_root}+{e.y_root}')
+
+    def plot(self, root, dfa1, company_name):
+        print('plot')
+        figure1 = plt.Figure(figsize=(9,5), dpi=100)
+        ax1 = figure1.add_subplot(111)
+        bar1 = FigureCanvasTkAgg(figure1, root)
+        bar1.get_tk_widget().grid(row=0, column=2)
+        df1 = dfa1[['date','mentions']].groupby('date').sum()
+        df1.plot( kind='line', legend=True, ax=ax1, color='skyblue',marker='o', fontsize=10)
+        df2 = dfa1[['date', 'price']].groupby('date').sum()
+        df2.plot( kind='line', legend=True, ax=ax1, marker='', color='olive', linewidth=2)
+        # plt.legend()
+        ax1.set_title("Pergerakan Harga Saham "+company_name)
 
 def main():
 

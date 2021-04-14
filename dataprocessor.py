@@ -34,8 +34,8 @@ class DataProcessor():
         elif('pkl' in fileext): # csv
             self.df = pd.read_pickle(filepath)
         else: #
-            print('hanya menerima file csv, pickel dan json')
-            return
+            return 'hanya menerima file csv, pickel dan json'
+        return 'load file berhasil'
 
     '''
     method utk mendapatkan list kode saham dari data chat dalam rentang waktu tertentu
@@ -143,7 +143,7 @@ class DataProcessor():
         #Mengambil Nama Perusahaan
         company_info = yf.Ticker("{}".format(stockcode))
         company_name = company_info.info["longName"]
-        return company_name, stock_price, DataFrame(stock_price)
+        return '{} [{}]'.format(company_name, stockcode.upper()), stock_price, DataFrame(stock_price)
 
     '''
     sanding data, memasukkan informasi price ke dataframe lain, utk keperluan plotting
@@ -177,8 +177,6 @@ class DataProcessor():
         ax1 = figure1.add_subplot(111)
         bar1 = FigureCanvasTkAgg(figure1, root)
         bar1.get_tk_widget().grid(row=0, column=2)
-        # df1 = df1[['Country','GDP_Per_Capita']].groupby('Country').sum()
-        # df1.plot(kind='bar', legend=True, ax=ax1)
         df1 = dfa1[['date','mentions']].groupby('date').sum()
         df1.plot( kind='line', legend=True, ax=ax1, color='skyblue',marker='o', fontsize=10)
         df2 = dfa1[['date', 'price']].groupby('date').sum()
